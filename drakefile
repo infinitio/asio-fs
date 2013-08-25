@@ -1,0 +1,55 @@
+import drake
+import drake.cxx
+import drake.cxx.boost
+
+config = None
+
+def configure(cxx_toolkit = None,
+              cxx_config = None,
+              boost = None):
+
+  global config
+
+  cxx_toolkit = cxx_toolkit or drake.cxx.Toolkit()
+  cxx_config = drake.cxx.Config(cxx_config)
+  boost = boost or drake.cxx.boost.Boost(cxx_toolkit)
+
+  # Public configuration
+  config = drake.cxx.Config()
+  config.standard = drake.cxx.Config.cxx_11
+  config.add_local_include_path('src')
+
+  # Local configuration
+  cxx_config += config
+  cxx_config += boost.config_system()
+
+  # Sources
+  sources = drake.nodes(
+    'src/asio-fs/Service.hh',
+    'src/asio-fs/Service.cc',
+    'src/asio-fs/posix.hh',
+    'src/asio-fs/posix.cc',
+    )
+
+  # Libraries
+  library_dynamic = drake.cxx.DynLib('lib/asio-fs', sources,
+                                     cxx_toolkit, cxx_config)
+  rule_build = drake.Rule('build')
+  rule_build << library_dynamic
+
+  # Tests
+  root = drake.Path('tests')
+  rule_tests = drake.Rule('tests')
+  rule_check = drake.TestSuite('check')
+  cxx_config_tests = drake.cxx.Config(cxx_config)
+  cxx_config_tests += boost.config_test()
+  cxx_config_tests.lib_path_runtime('../lib')
+  test_file = drake.node('tests/test_file')
+  for name in ['tests']:
+    sources = drake.nodes(root / ('%s.cc' % name))
+    test = drake.cxx.Executable('tests/%s' % name,
+                                sources + [library_dynamic],
+                                cxx_toolkit, cxx_config_tests)
+    rule_tests << test
+    runner = drake.Runner(test)
+    rule_check << runner.status
