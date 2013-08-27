@@ -3,12 +3,13 @@ import drake.cxx
 import drake.cxx.boost
 
 config = None
+library = None
 
 def configure(cxx_toolkit = None,
               cxx_config = None,
               boost = None):
 
-  global config
+  global config, library
 
   cxx_toolkit = cxx_toolkit or drake.cxx.Toolkit()
   cxx_config = drake.cxx.Config(cxx_config)
