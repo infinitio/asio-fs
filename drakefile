@@ -36,6 +36,8 @@ def configure(cxx_toolkit = None,
   # Libraries
   library_dynamic = drake.cxx.DynLib('lib/asio-fs', sources,
                                      cxx_toolkit, cxx_config)
+  library = library_dynamic
+
   rule_build = drake.Rule('build')
   rule_build << library_dynamic
 
