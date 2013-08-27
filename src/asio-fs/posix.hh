@@ -43,7 +43,7 @@ namespace boost
       void
       async_write(io_service& io_service,
                  int fd,
-                 void* buf,
+                 void const* buf,
                  size_t count,
                  ReadHandler handler);
     }

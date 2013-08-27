@@ -112,6 +112,23 @@ namespace boost
           buf,
           count);
       }
+
+      typedef std::function<void (system::error_code const&, size_t)> WriteHandler;
+      void
+      async_write(io_service& io_service,
+                  int fd,
+                  void const* buf,
+                  size_t count,
+                  WriteHandler handler)
+      {
+        _async_run<WriteHandler>(
+          io_service,
+          handler,
+          std::function<int (int fd, void const* buf, size_t)>(::write),
+          fd,
+          buf,
+          count);
+      }
     }
   }
 }
