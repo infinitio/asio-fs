@@ -23,6 +23,7 @@ def configure(cxx_toolkit = None,
   # Local configuration
   cxx_config += config
   cxx_config += boost.config_system()
+  cxx_config += boost.config_filesystem()
 
   # Sources
   sources = drake.nodes(
