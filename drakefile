@@ -3,13 +3,13 @@ import drake.cxx
 import drake.cxx.boost
 
 config = None
-library = None
+library_dynamic = None
 
 def configure(cxx_toolkit = None,
               cxx_config = None,
               boost = None):
 
-  global config, library
+  global config, library_dynamic
 
   cxx_toolkit = cxx_toolkit or drake.cxx.Toolkit()
   cxx_config = drake.cxx.Config(cxx_config)
@@ -39,8 +39,6 @@ def configure(cxx_toolkit = None,
   # Libraries
   library_dynamic = drake.cxx.DynLib('lib/asio-fs', sources,
                                      cxx_toolkit, cxx_config)
-  library = library_dynamic
-
   rule_build = drake.Rule('build')
   rule_build << library_dynamic
 
