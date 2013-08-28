@@ -23,7 +23,7 @@ def configure(cxx_toolkit = None,
   # Local configuration
   cxx_config += config
   cxx_config += boost.config_system()
-  cxx_config += boost.config_filesystem(static = False)
+  cxx_config += boost.config_filesystem(static = (cxx_toolkit.os is drake.os.macos))
 
   # Sources
   sources = drake.nodes(
