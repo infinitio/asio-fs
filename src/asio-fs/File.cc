@@ -57,7 +57,7 @@ namespace boost
           // XXX throw system error instead.
           throw std::runtime_error{"Couldn't close the file"};
         this->_handle = File::invalid_handle;
-        this->_path = boost::filesystem::path{};
+        this->_path.clear();
       }
 
       int
