@@ -1,11 +1,41 @@
 #include <asio-fs/File.hh>
 
+#if defined(INFINIT_WINDOWS)
+# include <io.h>
+# include <fcntl.h>
+# include <sys/types.h>
+# include <sys/stat.h>
+#endif
+
+
 namespace boost
 {
   namespace asio
   {
     namespace fs
     {
+      static
+      int
+      native_open(char const* filename, int opflags, int flags)
+      {
+#if defined(INFINIT_WINDOWS)
+        return _open(filename, opflags, flags);
+#else
+        return open(filename, opflags, flags);
+#endif
+      }
+
+      static
+      int
+      native_close(int fd)
+      {
+#if defined(INFINIT_WINDOWS)
+        return _close(fd);
+#else
+        return close(fd);
+#endif
+      }
+
       File::handle_type const File::invalid_handle = -1;
       Flag const File::default_flags = Flag::read_write | Flag::create;
       File::Access const File::default_permissions = {
@@ -22,9 +52,9 @@ namespace boost
                  Permission const other):
         _owner(owner),
         _path{std::move(path)},
-        _handle{::open(path.string().c_str(),
-                       File::_native_flags(flags),
-                       File::_native_mode(user, group, other))}
+        _handle{native_open(path.string().c_str(),
+                     File::_native_flags(flags),
+                     File::_native_mode(user, group, other))}
       {
         if (this->_handle == File::invalid_handle)
           // XXX throw system error instead.
@@ -53,7 +83,7 @@ namespace boost
       {
         if (this->_handle == File::invalid_handle)
           throw std::runtime_error{"File already closed"};
-        if (::close(this->_handle) == -1)
+        if (native_close(this->_handle) == -1)
           // XXX throw system error instead.
           throw std::runtime_error{"Couldn't close the file"};
         this->_handle = File::invalid_handle;
@@ -78,8 +108,10 @@ namespace boost
           res |= O_CREAT;
         if (flags & Flag::append)
           res |= O_APPEND;
+#if !defined(INFINIT_WINDOWS)
         if (flags & Flag::close_on_execute)
           res |= O_CLOEXEC;
+#endif
         if (flags & Flag::truncate)
           res |= O_TRUNC;
         if (flags & Flag::force_create)
@@ -94,6 +126,7 @@ namespace boost
                          Permission const other)
       {
         mode_t res = 0;
+#if !defined(INFINIT_WINDOWS)
         if (user & Permission::read)
           res |= S_IRUSR;
         if (user & Permission::write)
@@ -114,7 +147,7 @@ namespace boost
           res |= S_IWOTH;
         if (other & Permission::execute)
           res |= S_IXOTH;
-
+#endif
         return res;
       }
     }

@@ -1,6 +1,14 @@
 #include <asio-fs/Service.hh>
 #include <asio-fs/posix.hh>
 
+#if defined(INFINIT_WINDOWS)
+# include <io.h>
+# define open _open
+# define read _read
+# define write _write
+# define close _close
+#endif
+
 namespace boost
 {
   namespace asio
@@ -75,7 +83,7 @@ namespace boost
         _async_run<CloseHandler, int>(
           io_service,
           handler,
-          std::function<int (int)>(::close),
+          std::function<int (int)>(close),
           fd);
       }
 
@@ -90,7 +98,7 @@ namespace boost
         _async_run<OpenHandler, char const*, int, mode_t>(
           io_service,
           handler,
-          std::function<int (char const*, int, mode_t)>(::open),
+          std::function<int (char const*, int, mode_t)>(open),
           pathname,
           flags,
           mode);
@@ -107,7 +115,7 @@ namespace boost
         _async_run<ReadHandler>(
           io_service,
           handler,
-          std::function<int (int fd, void *buf, size_t)>(::read),
+          std::function<int (int fd, void *buf, size_t)>(read),
           fd,
           buf,
           count);
@@ -124,7 +132,7 @@ namespace boost
         _async_run<WriteHandler>(
           io_service,
           handler,
-          std::function<int (int fd, void const* buf, size_t)>(::write),
+          std::function<int (int fd, void const* buf, size_t)>(write),
           fd,
           buf,
           count);
