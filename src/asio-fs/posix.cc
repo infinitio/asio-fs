@@ -3,10 +3,15 @@
 
 #if defined(INFINIT_WINDOWS)
 # include <io.h>
-# define open _open
-# define read _read
-# define write _write
-# define close _close
+# define NATIVE_OPEN ::_open
+# define NATIVE_READ ::_read
+# define NATIVE_WRITE ::_write
+# define NATIVE_CLOSE ::_close
+#else
+# define NATIVE_OPEN ::open
+# define NATIVE_READ ::read
+# define NATIVE_WRITE ::write
+# define NATIVE_CLOSE ::close
 #endif
 
 namespace boost
@@ -83,7 +88,7 @@ namespace boost
         _async_run<CloseHandler, int>(
           io_service,
           handler,
-          std::function<int (int)>(close),
+          std::function<int (int)>(NATIVE_CLOSE),
           fd);
       }
 
@@ -98,13 +103,13 @@ namespace boost
         _async_run<OpenHandler, char const*, int, mode_t>(
           io_service,
           handler,
-          std::function<int (char const*, int, mode_t)>(open),
+          std::function<int (char const*, int, mode_t)>(NATIVE_OPEN),
           pathname,
           flags,
           mode);
       }
 
-      typedef std::function<void (system::error_code const&, size_t)> ReadHandler;
+      typedef std::function<void(system::error_code const&, size_t)> ReadHandler;
       void
       async_read(io_service& io_service,
                  int fd,
@@ -115,7 +120,7 @@ namespace boost
         _async_run<ReadHandler>(
           io_service,
           handler,
-          std::function<int (int fd, void *buf, size_t)>(read),
+          std::function<int(int fd, void *buf, size_t)>(NATIVE_READ),
           fd,
           buf,
           count);
@@ -132,7 +137,7 @@ namespace boost
         _async_run<WriteHandler>(
           io_service,
           handler,
-          std::function<int (int fd, void const* buf, size_t)>(write),
+          std::function<int(int fd, void const* buf, size_t)>(NATIVE_WRITE),
           fd,
           buf,
           count);
