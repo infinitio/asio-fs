@@ -41,7 +41,7 @@ namespace boost
       File::Access const File::default_permissions = {
         Permission::rw,
         Permission::rw,
-        Permission::read,
+        Permission::rw,
       };
 
       File::File(io_service& owner,
@@ -58,7 +58,16 @@ namespace boost
       {
         if (this->_handle == File::invalid_handle)
           // XXX throw system error instead.
-          throw std::runtime_error("Invalid handle");
+        {
+#if defined(INFINIT_WINDOWS)
+          int err = GetLastError();
+#else
+          int err = errno;
+#endif
+          std::stringstream ss;
+          ss << "Invalid handle: error " << err;
+          throw std::runtime_error(ss.str());
+        }
       }
 
       File::File(io_service& owner):
